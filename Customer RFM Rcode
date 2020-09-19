@@ -1,0 +1,32 @@
+library(tidyverse)
+library(lubridate)
+
+anyNA(data)
+
+summary(data)
+
+
+data <- data %>%
+  mutate(Quantity = replace(Quantity, Quantity<=0 , NA),
+         UnitPrice = replace(UnitPrice, UnitPrice<=0, NA))
+
+data <- data %>%
+  drop_na()
+
+
+data <- data %>%
+  mutate(InvoiceNo = as.factor(InvoiceNo), StockCode = as.factor(StockCode),
+         InvoiceDate = as.POSIXct(InvoiceDate, "%m/%d/%Y %H:%M"), CustomerID = as.factor(CustomerID),
+         Country = as.factor(Country))
+
+str(data)
+
+data <- data %>%
+  mutate(totalprice = Quantity*UnitPrice)
+
+glimpse(data)
+
+rfm <- data %>%
+  group_by(CustomerID) %>%
+  summarise(recency = as.numeric(as.POSIXct("2012-01-01") - max(InvoiceDate)),
+            frequency = n_distinct(InvoiceNo), monitary = sum(totalprice/n_distinct(InvoiceNo)))
